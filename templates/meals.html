@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Meal Database - Meal Planner{% endblock %}
+{% block title %}Dish Database - Meal Planner{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>
-        <i class="fas fa-database me-2"></i>Meal Database
+        <i class="fas fa-database me-2"></i>Dish Database
     </h2>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMealModal">
-        <i class="fas fa-plus me-2"></i>Add New Meal
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDishModal">
+        <i class="fas fa-plus me-2"></i>Add New Dish
     </button>
 </div>
 
@@ -18,7 +18,7 @@
             <span class="input-group-text">
                 <i class="fas fa-search"></i>
             </span>
-            <input type="text" class="form-control" id="searchInput" placeholder="Search meals...">
+            <input type="text" class="form-control" id="searchInput" placeholder="Search dishes...">
         </div>
     </div>
     <div class="col-md-6">
@@ -32,34 +32,34 @@
     </div>
 </div>
 
-<div class="row g-4" id="mealsGrid">
-    {% for meal in meals %}
-    <div class="col-md-6 col-lg-4 meal-card" data-name="{{ meal.name.lower() }}" data-type="{{ meal.meal_type }}">
+<div class="row g-4" id="dishesGrid">
+    {% for dish in dishes %}
+    <div class="col-md-6 col-lg-4 dish-card" data-name="{{ dish.name.lower() }}" data-type="{{ dish.meal_type }}">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-light">
                 <div class="d-flex justify-content-between align-items-center">
-                    <span class="badge bg-primary">{{ meal.meal_type.title() }}</span>
-                    <small class="text-muted">{{ meal.calories }} cal</small>
+                    <span class="badge bg-primary">{{ dish.meal_type.title() }}</span>
+                    <small class="text-muted">{{ dish.calories }} cal</small>
                 </div>
             </div>
             <div class="card-body">
-                <h5 class="card-title">{{ meal.name }}</h5>
+                <h5 class="card-title">{{ dish.name }}</h5>
                 <div class="row text-center mb-3">
                     <div class="col-4">
                         <div class="nutrition-item">
-                            <h6 class="text-success mb-1">{{ meal.protein }}g</h6>
+                            <h6 class="text-success mb-1">{{ dish.protein }}g</h6>
                             <small class="text-muted">Protein</small>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="nutrition-item">
-                            <h6 class="text-warning mb-1">{{ meal.carbs }}g</h6>
+                            <h6 class="text-warning mb-1">{{ dish.carbs }}g</h6>
                             <small class="text-muted">Carbs</small>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="nutrition-item">
-                            <h6 class="text-danger mb-1">{{ meal.fat }}g</h6>
+                            <h6 class="text-danger mb-1">{{ dish.fat }}g</h6>
                             <small class="text-muted">Fat</small>
                         </div>
                     </div>
@@ -67,8 +67,8 @@
             </div>
             <div class="card-footer bg-transparent">
                 <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">Added: {{ meal.created_at.strftime('%Y-%m-%d') }}</small>
-                    <button class="btn btn-sm btn-outline-primary" onclick="editMeal({{ meal.id }})">
+                    <small class="text-muted">Added: {{ dish.created_at.strftime('%Y-%m-%d') }}</small>
+                    <button class="btn btn-sm btn-outline-primary" onclick="editDish({{ dish.id }})">
                         <i class="fas fa-edit"></i>
                     </button>
                 </div>
@@ -78,26 +78,26 @@
     {% endfor %}
 </div>
 
-<!-- Add Meal Modal -->
-<div class="modal fade" id="addMealModal" tabindex="-1">
+<!-- Add Dish Modal -->
+<div class="modal fade" id="addDishModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="fas fa-plus me-2"></i>Add New Meal
+                    <i class="fas fa-plus me-2"></i>Add New Dish
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="addMealForm">
+                <form id="addDishForm">
                     <div class="mb-3">
-                        <label for="mealName" class="form-label">Meal Name</label>
-                        <input type="text" class="form-control" id="mealName" required>
+                        <label for="dishName" class="form-label">Dish Name</label>
+                        <input type="text" class="form-control" id="dishName" required>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="mealType" class="form-label">Meal Type</label>
-                        <select class="form-select" id="mealType" required>
+                        <label for="dishType" class="form-label">Meal Type</label>
+                        <select class="form-select" id="dishType" required>
                             <option value="">Select meal type</option>
                             <option value="breakfast">Breakfast</option>
                             <option value="lunch">Lunch</option>
@@ -139,35 +139,35 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="saveMeal()">
-                    <i class="fas fa-save me-2"></i>Save Meal
+                <button type="button" class="btn btn-primary" onclick="saveDish()">
+                    <i class="fas fa-save me-2"></i>Save Dish
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Edit Meal Modal -->
-<div class="modal fade" id="editMealModal" tabindex="-1">
+<!-- Edit Dish Modal -->
+<div class="modal fade" id="editDishModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="fas fa-edit me-2"></i>Edit Meal
+                    <i class="fas fa-edit me-2"></i>Edit Dish
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="editMealForm">
-                    <input type="hidden" id="editMealId">
+                <form id="editDishForm">
+                    <input type="hidden" id="editDishId">
                     <div class="mb-3">
-                        <label for="editMealName" class="form-label">Meal Name</label>
-                        <input type="text" class="form-control" id="editMealName" required>
+                        <label for="editDishName" class="form-label">Dish Name</label>
+                        <input type="text" class="form-control" id="editDishName" required>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="editMealType" class="form-label">Meal Type</label>
-                        <select class="form-select" id="editMealType" required>
+                        <label for="editDishType" class="form-label">Meal Type</label>
+                        <select class="form-select" id="editDishType" required>
                             <option value="breakfast">Breakfast</option>
                             <option value="lunch">Lunch</option>
                             <option value="dinner">Dinner</option>
@@ -208,8 +208,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="updateMeal()">
-                    <i class="fas fa-save me-2"></i>Update Meal
+                <button type="button" class="btn btn-primary" onclick="updateDish()">
+                    <i class="fas fa-save me-2"></i>Update Dish
                 </button>
             </div>
         </div>
@@ -220,20 +220,20 @@
 {% block scripts %}
 <script>
 // Search and filter functionality
-document.getElementById('searchInput').addEventListener('input', filterMeals);
-document.getElementById('filterType').addEventListener('change', filterMeals);
+document.getElementById('searchInput').addEventListener('input', filterDishes);
+document.getElementById('filterType').addEventListener('change', filterDishes);
 
-function filterMeals() {
+function filterDishes() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const filterType = document.getElementById('filterType').value;
-    const mealCards = document.querySelectorAll('.meal-card');
+    const dishCards = document.querySelectorAll('.dish-card');
     
-    mealCards.forEach(card => {
-        const mealName = card.dataset.name;
-        const mealType = card.dataset.type;
+    dishCards.forEach(card => {
+        const dishName = card.dataset.name;
+        const dishType = card.dataset.type;
         
-        const matchesSearch = mealName.includes(searchTerm);
-        const matchesType = !filterType || mealType === filterType;
+        const matchesSearch = dishName.includes(searchTerm);
+        const matchesType = !filterType || dishType === filterType;
         
         if (matchesSearch && matchesType) {
             card.style.display = 'block';
@@ -243,18 +243,18 @@ function filterMeals() {
     });
 }
 
-// Add meal functionality
-function saveMeal() {
+// Add dish functionality
+function saveDish() {
     const formData = {
-        name: document.getElementById('mealName').value,
-        meal_type: document.getElementById('mealType').value,
+        name: document.getElementById('dishName').value,
+        meal_type: document.getElementById('dishType').value,
         calories: parseInt(document.getElementById('calories').value),
         protein: parseFloat(document.getElementById('protein').value),
         carbs: parseFloat(document.getElementById('carbs').value),
         fat: parseFloat(document.getElementById('fat').value)
     };
     
-    fetch('/api/meals', {
+    fetch('/api/dishes', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -263,25 +263,25 @@ function saveMeal() {
     })
     .then(response => response.json())
     .then(data => {
-        // Close modal and reload page to show new meal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('addMealModal'));
+        // Close modal and reload page to show new dish
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addDishModal'));
         modal.hide();
         location.reload();
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error saving meal. Please try again.');
+        alert('Error saving dish. Please try again.');
     });
 }
 
-// Edit meal functionality (placeholder - would need additional backend endpoint)
-function editMeal(mealId) {
-    // This would typically fetch meal data and populate the edit modal
+// Edit dish functionality (placeholder - would need additional backend endpoint)
+function editDish(dishId) {
+    // This would typically fetch dish data and populate the edit modal
     alert('Edit functionality would be implemented here with additional backend endpoints.');
 }
 
-function updateMeal() {
-    // This would typically update the meal via API
+function updateDish() {
+    // This would typically update the dish via API
     alert('Update functionality would be implemented here with additional backend endpoints.');
 }
 </script>

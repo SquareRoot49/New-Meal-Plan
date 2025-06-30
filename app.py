@@ -9,7 +9,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Database Models
-class Meal(db.Model):
+class Dish(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     calories = db.Column(db.Integer, nullable=False)
@@ -23,36 +23,56 @@ class MealPlan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     target_calories = db.Column(db.Integer, nullable=False)
     date = db.Column(db.Date, nullable=False)
-    breakfast_id = db.Column(db.Integer, db.ForeignKey('meal.id'))
-    lunch_id = db.Column(db.Integer, db.ForeignKey('meal.id'))
-    dinner_id = db.Column(db.Integer, db.ForeignKey('meal.id'))
-    snack_id = db.Column(db.Integer, db.ForeignKey('meal.id'))
+    breakfast_dishes = db.Column(db.String(500))  # JSON string of dish IDs
+    lunch_dishes = db.Column(db.String(500))
+    dinner_dishes = db.Column(db.String(500))
+    snack_dishes = db.Column(db.String(500))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# Sample meal data
-SAMPLE_MEALS = [
-    # Breakfast options
-    {"name": "Oatmeal with Berries", "calories": 300, "protein": 12, "carbs": 45, "fat": 8, "meal_type": "breakfast"},
-    {"name": "Greek Yogurt with Honey", "calories": 250, "protein": 20, "carbs": 25, "fat": 5, "meal_type": "breakfast"},
-    {"name": "Scrambled Eggs with Toast", "calories": 350, "protein": 18, "carbs": 30, "fat": 15, "meal_type": "breakfast"},
-    {"name": "Smoothie Bowl", "calories": 280, "protein": 15, "carbs": 40, "fat": 6, "meal_type": "breakfast"},
+# Sample dish data
+SAMPLE_DISHES = [
+    # Breakfast dishes
+    {"name": "Oatmeal", "calories": 150, "protein": 6, "carbs": 27, "fat": 3, "meal_type": "breakfast"},
+    {"name": "Fresh Berries", "calories": 50, "protein": 1, "carbs": 12, "fat": 0, "meal_type": "breakfast"},
+    {"name": "Greek Yogurt", "calories": 120, "protein": 15, "carbs": 8, "fat": 2, "meal_type": "breakfast"},
+    {"name": "Honey", "calories": 60, "protein": 0, "carbs": 17, "fat": 0, "meal_type": "breakfast"},
+    {"name": "Scrambled Eggs", "calories": 200, "protein": 14, "carbs": 2, "fat": 15, "meal_type": "breakfast"},
+    {"name": "Whole Grain Toast", "calories": 80, "protein": 4, "carbs": 15, "fat": 1, "meal_type": "breakfast"},
+    {"name": "Banana", "calories": 100, "protein": 1, "carbs": 26, "fat": 0, "meal_type": "breakfast"},
+    {"name": "Almond Butter", "calories": 100, "protein": 4, "carbs": 3, "fat": 8, "meal_type": "breakfast"},
     
-    # Lunch options
-    {"name": "Grilled Chicken Salad", "calories": 400, "protein": 35, "carbs": 15, "fat": 20, "meal_type": "lunch"},
-    {"name": "Quinoa Bowl", "calories": 450, "protein": 18, "carbs": 60, "fat": 12, "meal_type": "lunch"},
-    {"name": "Turkey Sandwich", "calories": 380, "protein": 25, "carbs": 45, "fat": 12, "meal_type": "lunch"},
-    {"name": "Vegetable Soup", "calories": 200, "protein": 8, "carbs": 25, "fat": 8, "meal_type": "lunch"},
+    # Lunch dishes
+    {"name": "Grilled Chicken Breast", "calories": 250, "protein": 35, "carbs": 0, "fat": 12, "meal_type": "lunch"},
+    {"name": "Mixed Greens", "calories": 20, "protein": 2, "carbs": 4, "fat": 0, "meal_type": "lunch"},
+    {"name": "Cherry Tomatoes", "calories": 30, "protein": 1, "carbs": 6, "fat": 0, "meal_type": "lunch"},
+    {"name": "Olive Oil Dressing", "calories": 100, "protein": 0, "carbs": 0, "fat": 11, "meal_type": "lunch"},
+    {"name": "Quinoa", "calories": 200, "protein": 8, "carbs": 39, "fat": 4, "meal_type": "lunch"},
+    {"name": "Roasted Vegetables", "calories": 150, "protein": 4, "carbs": 25, "fat": 5, "meal_type": "lunch"},
+    {"name": "Turkey Breast", "calories": 180, "protein": 25, "carbs": 0, "fat": 8, "meal_type": "lunch"},
+    {"name": "Whole Grain Bread", "calories": 120, "protein": 6, "carbs": 22, "fat": 2, "meal_type": "lunch"},
+    {"name": "Lettuce", "calories": 10, "protein": 1, "carbs": 2, "fat": 0, "meal_type": "lunch"},
+    {"name": "Mustard", "calories": 10, "protein": 0, "carbs": 2, "fat": 0, "meal_type": "lunch"},
     
-    # Dinner options
-    {"name": "Salmon with Vegetables", "calories": 500, "protein": 40, "carbs": 20, "fat": 25, "meal_type": "dinner"},
-    {"name": "Beef Stir Fry", "calories": 450, "protein": 30, "carbs": 35, "fat": 20, "meal_type": "dinner"},
-    {"name": "Pasta with Tomato Sauce", "calories": 400, "protein": 12, "carbs": 60, "fat": 10, "meal_type": "dinner"},
-    {"name": "Vegetarian Curry", "calories": 350, "protein": 15, "carbs": 45, "fat": 12, "meal_type": "dinner"},
+    # Dinner dishes
+    {"name": "Salmon Fillet", "calories": 300, "protein": 35, "carbs": 0, "fat": 18, "meal_type": "dinner"},
+    {"name": "Steamed Broccoli", "calories": 50, "protein": 4, "carbs": 10, "fat": 0, "meal_type": "dinner"},
+    {"name": "Brown Rice", "calories": 150, "protein": 3, "carbs": 32, "fat": 1, "meal_type": "dinner"},
+    {"name": "Lean Beef Strips", "calories": 250, "protein": 25, "carbs": 0, "fat": 15, "meal_type": "dinner"},
+    {"name": "Stir Fry Vegetables", "calories": 100, "protein": 4, "carbs": 15, "fat": 3, "meal_type": "dinner"},
+    {"name": "Soy Sauce", "calories": 20, "protein": 2, "carbs": 4, "fat": 0, "meal_type": "dinner"},
+    {"name": "Whole Wheat Pasta", "calories": 200, "protein": 8, "carbs": 40, "fat": 1, "meal_type": "dinner"},
+    {"name": "Tomato Sauce", "calories": 80, "protein": 2, "carbs": 12, "fat": 3, "meal_type": "dinner"},
+    {"name": "Parmesan Cheese", "calories": 120, "protein": 8, "carbs": 2, "fat": 8, "meal_type": "dinner"},
+    {"name": "Chickpeas", "calories": 150, "protein": 8, "carbs": 25, "fat": 3, "meal_type": "dinner"},
+    {"name": "Coconut Milk", "calories": 100, "protein": 1, "carbs": 2, "fat": 10, "meal_type": "dinner"},
+    {"name": "Curry Spices", "calories": 20, "protein": 1, "carbs": 4, "fat": 0, "meal_type": "dinner"},
     
-    # Snack options
-    {"name": "Apple with Peanut Butter", "calories": 200, "protein": 6, "carbs": 25, "fat": 10, "meal_type": "snack"},
+    # Snack dishes
+    {"name": "Apple", "calories": 80, "protein": 0, "carbs": 21, "fat": 0, "meal_type": "snack"},
+    {"name": "Peanut Butter", "calories": 120, "protein": 6, "carbs": 4, "fat": 10, "meal_type": "snack"},
     {"name": "Mixed Nuts", "calories": 180, "protein": 6, "carbs": 8, "fat": 16, "meal_type": "snack"},
-    {"name": "Carrot Sticks with Hummus", "calories": 150, "protein": 5, "carbs": 20, "fat": 6, "meal_type": "snack"},
+    {"name": "Carrot Sticks", "calories": 50, "protein": 1, "carbs": 12, "fat": 0, "meal_type": "snack"},
+    {"name": "Hummus", "calories": 100, "protein": 4, "carbs": 8, "fat": 6, "meal_type": "snack"},
     {"name": "Greek Yogurt", "calories": 120, "protein": 15, "carbs": 8, "fat": 2, "meal_type": "snack"},
 ]
 
@@ -66,8 +86,8 @@ def plan():
 
 @app.route('/meals')
 def meals():
-    meals = Meal.query.all()
-    return render_template('meals.html', meals=meals)
+    dishes = Dish.query.all()
+    return render_template('meals.html', dishes=dishes)
 
 @app.route('/api/generate_plan', methods=['POST'])
 def generate_plan():
@@ -80,48 +100,85 @@ def generate_plan():
     dinner_calories = int(target_calories * 0.25)
     snack_calories = int(target_calories * 0.05)
     
-    # Select meals for each type
-    breakfast_meals = Meal.query.filter_by(meal_type='breakfast').all()
-    lunch_meals = Meal.query.filter_by(meal_type='lunch').all()
-    dinner_meals = Meal.query.filter_by(meal_type='dinner').all()
-    snack_meals = Meal.query.filter_by(meal_type='snack').all()
+    # Get dishes for each meal type
+    breakfast_dishes = Dish.query.filter_by(meal_type='breakfast').all()
+    lunch_dishes = Dish.query.filter_by(meal_type='lunch').all()
+    dinner_dishes = Dish.query.filter_by(meal_type='dinner').all()
+    snack_dishes = Dish.query.filter_by(meal_type='snack').all()
     
-    # Find meals closest to target calories for each meal type
-    def find_best_meal(meals, target_cals):
-        if not meals:
-            return None
-        return min(meals, key=lambda x: abs(x.calories - target_cals))
+    # Generate meal combinations
+    breakfast = generate_meal_combination(breakfast_dishes, breakfast_calories, 2, 3)
+    lunch = generate_meal_combination(lunch_dishes, lunch_calories, 2, 3)
+    dinner = generate_meal_combination(dinner_dishes, dinner_calories, 2, 3)
+    snack = generate_meal_combination(snack_dishes, snack_calories, 1, 2)
     
-    breakfast = find_best_meal(breakfast_meals, breakfast_calories)
-    lunch = find_best_meal(lunch_meals, lunch_calories)
-    dinner = find_best_meal(dinner_meals, dinner_calories)
-    snack = find_best_meal(snack_meals, snack_calories)
+    # Calculate totals
+    all_meals = [breakfast, lunch, dinner, snack]
+    total_calories = sum(meal['total_calories'] for meal in all_meals if meal)
     
     plan = {
-        'breakfast': breakfast.to_dict() if breakfast else None,
-        'lunch': lunch.to_dict() if lunch else None,
-        'dinner': dinner.to_dict() if dinner else None,
-        'snack': snack.to_dict() if snack else None,
-        'total_calories': sum([m.calories for m in [breakfast, lunch, dinner, snack] if m]),
+        'breakfast': breakfast,
+        'lunch': lunch,
+        'dinner': dinner,
+        'snack': snack,
+        'total_calories': total_calories,
         'target_calories': target_calories
     }
     
     return jsonify(plan)
 
-@app.route('/api/meals', methods=['GET'])
-def get_meals():
+def generate_meal_combination(dishes, target_calories, min_dishes=2, max_dishes=3):
+    """Generate a combination of dishes that best matches the target calories"""
+    if not dishes:
+        return None
+    
+    best_combination = None
+    best_difference = float('inf')
+    
+    # Try different combinations of dishes
+    for num_dishes in range(min_dishes, min(max_dishes + 1, len(dishes) + 1)):
+        # Generate multiple random combinations
+        for _ in range(10):  # Try 10 random combinations
+            selected_dishes = random.sample(dishes, num_dishes)
+            total_calories = sum(dish.calories for dish in selected_dishes)
+            
+            # Check if this combination is better
+            difference = abs(total_calories - target_calories)
+            if difference < best_difference:
+                best_difference = difference
+                best_combination = selected_dishes
+    
+    if not best_combination:
+        return None
+    
+    # Calculate totals
+    total_calories = sum(dish.calories for dish in best_combination)
+    total_protein = sum(dish.protein for dish in best_combination)
+    total_carbs = sum(dish.carbs for dish in best_combination)
+    total_fat = sum(dish.fat for dish in best_combination)
+    
+    return {
+        'dishes': [dish.to_dict() for dish in best_combination],
+        'total_calories': total_calories,
+        'total_protein': total_protein,
+        'total_carbs': total_carbs,
+        'total_fat': total_fat
+    }
+
+@app.route('/api/dishes', methods=['GET'])
+def get_dishes():
     meal_type = request.args.get('type')
     if meal_type:
-        meals = Meal.query.filter_by(meal_type=meal_type).all()
+        dishes = Dish.query.filter_by(meal_type=meal_type).all()
     else:
-        meals = Meal.query.all()
+        dishes = Dish.query.all()
     
-    return jsonify([meal.to_dict() for meal in meals])
+    return jsonify([dish.to_dict() for dish in dishes])
 
-@app.route('/api/meals', methods=['POST'])
-def add_meal():
+@app.route('/api/dishes', methods=['POST'])
+def add_dish():
     data = request.get_json()
-    meal = Meal(
+    dish = Dish(
         name=data['name'],
         calories=int(data['calories']),
         protein=float(data['protein']),
@@ -129,23 +186,23 @@ def add_meal():
         fat=float(data['fat']),
         meal_type=data['meal_type']
     )
-    db.session.add(meal)
+    db.session.add(dish)
     db.session.commit()
-    return jsonify(meal.to_dict()), 201
+    return jsonify(dish.to_dict()), 201
 
 def init_db():
     with app.app_context():
         db.create_all()
         
-        # Add sample meals if database is empty
-        if Meal.query.count() == 0:
-            for meal_data in SAMPLE_MEALS:
-                meal = Meal(**meal_data)
-                db.session.add(meal)
+        # Add sample dishes if database is empty
+        if Dish.query.count() == 0:
+            for dish_data in SAMPLE_DISHES:
+                dish = Dish(**dish_data)
+                db.session.add(dish)
             db.session.commit()
 
-# Add to_dict method to Meal model
-def meal_to_dict(self):
+# Add to_dict method to Dish model
+def dish_to_dict(self):
     return {
         'id': self.id,
         'name': self.name,
@@ -156,7 +213,7 @@ def meal_to_dict(self):
         'meal_type': self.meal_type
     }
 
-Meal.to_dict = meal_to_dict
+Dish.to_dict = dish_to_dict
 
 if __name__ == '__main__':
     init_db()

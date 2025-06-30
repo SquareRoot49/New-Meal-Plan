@@ -91,23 +91,83 @@ body {
     margin-bottom: 0.25rem;
 }
 
-/* Meal Cards */
-.meal-card {
+/* Dish Items */
+.dish-item {
+    transition: var(--transition);
+    border-bottom: 1px solid #e9ecef !important;
+}
+
+.dish-item:last-child {
+    border-bottom: none !important;
+}
+
+.dish-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dish-info h6 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.25rem;
+}
+
+.dish-info small {
+    font-size: 0.8rem;
+    line-height: 1.2;
+}
+
+/* Meal Totals */
+.meal-totals {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+}
+
+.meal-totals h6 {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Dish Cards */
+.dish-card {
     transition: var(--transition);
 }
 
-.meal-card:hover {
+.dish-card:hover {
     transform: translateY(-3px);
 }
 
-.meal-card .card {
+.dish-card .card {
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
-.meal-card .card-body {
+.dish-card .card-body {
     flex: 1;
+}
+
+/* Dishes List */
+.dishes-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.dishes-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.dishes-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 2px;
+}
+
+.dishes-list::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+.dishes-list::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
 }
 
 /* Form Controls */
@@ -195,6 +255,14 @@ footer {
         width: 50px;
         height: 50px;
         font-size: 1.25rem;
+    }
+    
+    .dishes-list {
+        max-height: 200px;
+    }
+    
+    .dish-item {
+        padding: 0.75rem 0 !important;
     }
 }
 

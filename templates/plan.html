@@ -53,6 +53,10 @@
                     </li>
                     <li class="mb-2">
                         <i class="fas fa-check text-success me-2"></i>
+                        Each meal includes 2-3 dishes for variety
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
                         Include protein with every meal
                     </li>
                     <li class="mb-2">
@@ -119,6 +123,7 @@
                     <h4>Ready to Plan Your Meals?</h4>
                     <p class="text-muted">
                         Set your daily calorie target and click "Generate Meal Plan" to get started.
+                        Each meal will include 2-3 dishes for variety and balanced nutrition.
                     </p>
                 </div>
             </div>
@@ -178,9 +183,9 @@ function displayMealPlan(plan) {
     
     meals.forEach(meal => {
         if (meal) {
-            totalProtein += meal.protein;
-            totalCarbs += meal.carbs;
-            totalFat += meal.fat;
+            totalProtein += meal.total_protein;
+            totalCarbs += meal.total_carbs;
+            totalFat += meal.total_fat;
         }
     });
     
@@ -212,37 +217,60 @@ function createMealCard(meal, mealType) {
     const col = document.createElement('div');
     col.className = 'col-md-6';
     
+    const dishesList = meal.dishes.map(dish => `
+        <div class="dish-item d-flex justify-content-between align-items-center py-2 border-bottom">
+            <div class="dish-info">
+                <h6 class="mb-1">${dish.name}</h6>
+                <small class="text-muted">
+                    ${dish.calories} cal • ${dish.protein}g protein • ${dish.carbs}g carbs • ${dish.fat}g fat
+                </small>
+            </div>
+        </div>
+    `).join('');
+    
     col.innerHTML = `
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-${mealType.color} text-white">
-                <h6 class="mb-0">
-                    <i class="${mealType.icon} me-2"></i>${mealType.title}
-                </h6>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="${mealType.icon} me-2"></i>${mealType.title}
+                    </h6>
+                    <span class="badge bg-light text-dark">${meal.dishes.length} dishes</span>
+                </div>
             </div>
             <div class="card-body">
-                <h5 class="card-title">${meal.name}</h5>
-                <div class="row text-center mb-3">
-                    <div class="col-4">
-                        <div class="nutrition-item">
-                            <h6 class="text-primary mb-1">${meal.calories}</h6>
-                            <small class="text-muted">Calories</small>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="nutrition-item">
-                            <h6 class="text-success mb-1">${meal.protein}g</h6>
-                            <small class="text-muted">Protein</small>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="nutrition-item">
-                            <h6 class="text-warning mb-1">${meal.carbs}g</h6>
-                            <small class="text-muted">Carbs</small>
-                        </div>
-                    </div>
+                <div class="dishes-list mb-3">
+                    ${dishesList}
                 </div>
-                <div class="text-center">
-                    <span class="badge bg-secondary">${meal.fat}g Fat</span>
+                
+                <div class="meal-totals bg-light p-3 rounded">
+                    <h6 class="text-center mb-2">Meal Totals</h6>
+                    <div class="row text-center">
+                        <div class="col-3">
+                            <div class="nutrition-item">
+                                <h6 class="text-primary mb-1">${meal.total_calories}</h6>
+                                <small class="text-muted">Calories</small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="nutrition-item">
+                                <h6 class="text-success mb-1">${meal.total_protein.toFixed(1)}g</h6>
+                                <small class="text-muted">Protein</small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="nutrition-item">
+                                <h6 class="text-warning mb-1">${meal.total_carbs.toFixed(1)}g</h6>
+                                <small class="text-muted">Carbs</small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="nutrition-item">
+                                <h6 class="text-danger mb-1">${meal.total_fat.toFixed(1)}g</h6>
+                                <small class="text-muted">Fat</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
