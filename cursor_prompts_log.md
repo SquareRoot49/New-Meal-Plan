@@ -51,3 +51,32 @@ For each meal section (breakfast, lunch, dinner, snack), I want to add a pie cha
 - Updated `plan.html` to include canvas elements for each chart
 - Enhanced `app.js` to dynamically populate the calorie values for each chart based on the meal data
 - Adjusted layout and styles in `style.css` to position the charts cleanly within each card
+
+## Prompt 4 – 2025-06-30
+
+**Prompt:**  
+I want to add a "Dietary Preferences" section to the meal planner interface. This section should include checkboxes for the following options:
+
+- Vegetarian  
+- Vegan  
+- Gluten-Free  
+- Low-Carb
+
+These options should be placed near the "Set Your Goals" section. When the user checks one or more boxes and clicks "Generate Meal Plan", the recommended meals should only include dishes that match the selected preferences.
+
+Please update the frontend to show these checkboxes and the backend logic to filter out dishes that do not meet the selected criteria.
+
+**Files Modified:**  
+- templates/index.html  
+- app.py  
+- templates/plan.html  
+- (possibly data source: meals or dishes with new dietary tags)  
+- static/css/style.css  
+- static/js/app.js (if checkbox values are passed via JavaScript)
+
+**Description of Change:**  
+- Added a "Dietary Preferences" section with four checkboxes (Vegetarian, Vegan, Gluten-Free, Low-Carb) near the calorie input form  
+- Updated form submission logic to send selected preferences to the backend when generating a new meal plan  
+- Updated backend filtering logic in `app.py` to exclude dishes that don't match all selected dietary tags  
+- Annotated dishes in the database (or internal dish list) with dietary metadata  
+- Ensured generated meals for each section (breakfast, lunch, dinner, snack) now respect the user’s selected dietary restrictions  

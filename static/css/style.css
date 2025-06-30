@@ -362,4 +362,13 @@ footer {
         height: 140px !important;
         max-height: 140px;
     }
+}
+
+/* Dietary Preferences */
+.form-check {
+    margin-bottom: 0.25rem;
+}
+
+.form-label + .form-check {
+    margin-top: 0.25rem;
 } 

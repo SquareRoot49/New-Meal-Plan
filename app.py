@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import random
+import os
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///meals.db'
@@ -18,6 +19,10 @@ class Dish(db.Model):
     fat = db.Column(db.Float, nullable=False)
     meal_type = db.Column(db.String(20), nullable=False)  # breakfast, lunch, dinner, snack
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    vegetarian = db.Column(db.Boolean, default=False)
+    vegan = db.Column(db.Boolean, default=False)
+    gluten_free = db.Column(db.Boolean, default=False)
+    low_carb = db.Column(db.Boolean, default=False)
 
 class MealPlan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -32,55 +37,55 @@ class MealPlan(db.Model):
 # Sample dish data
 SAMPLE_DISHES = [
     # Breakfast dishes
-    {"name": "Oatmeal", "calories": 150, "protein": 6, "carbs": 27, "fat": 3, "meal_type": "breakfast"},
-    {"name": "Fresh Berries", "calories": 50, "protein": 1, "carbs": 12, "fat": 0, "meal_type": "breakfast"},
-    {"name": "Greek Yogurt", "calories": 120, "protein": 15, "carbs": 8, "fat": 2, "meal_type": "breakfast"},
-    {"name": "Honey", "calories": 60, "protein": 0, "carbs": 17, "fat": 0, "meal_type": "breakfast"},
-    {"name": "Scrambled Eggs", "calories": 200, "protein": 14, "carbs": 2, "fat": 15, "meal_type": "breakfast"},
-    {"name": "Whole Grain Toast", "calories": 80, "protein": 4, "carbs": 15, "fat": 1, "meal_type": "breakfast"},
-    {"name": "Banana", "calories": 100, "protein": 1, "carbs": 26, "fat": 0, "meal_type": "breakfast"},
-    {"name": "Almond Butter", "calories": 100, "protein": 4, "carbs": 3, "fat": 8, "meal_type": "breakfast"},
+    {"name": "Oatmeal", "calories": 150, "protein": 6, "carbs": 27, "fat": 3, "meal_type": "breakfast", "vegetarian": True, "vegan": True, "gluten_free": False, "low_carb": False},
+    {"name": "Fresh Berries", "calories": 50, "protein": 1, "carbs": 12, "fat": 0, "meal_type": "breakfast", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Greek Yogurt", "calories": 120, "protein": 15, "carbs": 8, "fat": 2, "meal_type": "breakfast", "vegetarian": True, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Honey", "calories": 60, "protein": 0, "carbs": 17, "fat": 0, "meal_type": "breakfast", "vegetarian": True, "vegan": False, "gluten_free": True, "low_carb": False},
+    {"name": "Scrambled Eggs", "calories": 200, "protein": 14, "carbs": 2, "fat": 15, "meal_type": "breakfast", "vegetarian": True, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Whole Grain Toast", "calories": 80, "protein": 4, "carbs": 15, "fat": 1, "meal_type": "breakfast", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
+    {"name": "Banana", "calories": 100, "protein": 1, "carbs": 26, "fat": 0, "meal_type": "breakfast", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Almond Butter", "calories": 100, "protein": 4, "carbs": 3, "fat": 8, "meal_type": "breakfast", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
     
     # Lunch dishes
-    {"name": "Grilled Chicken Breast", "calories": 250, "protein": 35, "carbs": 0, "fat": 12, "meal_type": "lunch"},
-    {"name": "Mixed Greens", "calories": 20, "protein": 2, "carbs": 4, "fat": 0, "meal_type": "lunch"},
-    {"name": "Cherry Tomatoes", "calories": 30, "protein": 1, "carbs": 6, "fat": 0, "meal_type": "lunch"},
-    {"name": "Olive Oil Dressing", "calories": 100, "protein": 0, "carbs": 0, "fat": 11, "meal_type": "lunch"},
-    {"name": "Quinoa", "calories": 200, "protein": 8, "carbs": 39, "fat": 4, "meal_type": "lunch"},
-    {"name": "Roasted Vegetables", "calories": 150, "protein": 4, "carbs": 25, "fat": 5, "meal_type": "lunch"},
-    {"name": "Turkey Breast", "calories": 180, "protein": 25, "carbs": 0, "fat": 8, "meal_type": "lunch"},
-    {"name": "Whole Grain Bread", "calories": 120, "protein": 6, "carbs": 22, "fat": 2, "meal_type": "lunch"},
-    {"name": "Lettuce", "calories": 10, "protein": 1, "carbs": 2, "fat": 0, "meal_type": "lunch"},
-    {"name": "Mustard", "calories": 10, "protein": 0, "carbs": 2, "fat": 0, "meal_type": "lunch"},
+    {"name": "Grilled Chicken Breast", "calories": 250, "protein": 35, "carbs": 0, "fat": 12, "meal_type": "lunch", "vegetarian": False, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Mixed Greens", "calories": 20, "protein": 2, "carbs": 4, "fat": 0, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Cherry Tomatoes", "calories": 30, "protein": 1, "carbs": 6, "fat": 0, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Olive Oil Dressing", "calories": 100, "protein": 0, "carbs": 0, "fat": 11, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Quinoa", "calories": 200, "protein": 8, "carbs": 39, "fat": 4, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Roasted Vegetables", "calories": 150, "protein": 4, "carbs": 25, "fat": 5, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Turkey Breast", "calories": 180, "protein": 25, "carbs": 0, "fat": 8, "meal_type": "lunch", "vegetarian": False, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Whole Grain Bread", "calories": 120, "protein": 6, "carbs": 22, "fat": 2, "meal_type": "lunch", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
+    {"name": "Lettuce", "calories": 10, "protein": 1, "carbs": 2, "fat": 0, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Mustard", "calories": 10, "protein": 0, "carbs": 2, "fat": 0, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
     
     # Dinner dishes
-    {"name": "Salmon Fillet", "calories": 300, "protein": 35, "carbs": 0, "fat": 18, "meal_type": "dinner"},
-    {"name": "Steamed Broccoli", "calories": 50, "protein": 4, "carbs": 10, "fat": 0, "meal_type": "dinner"},
-    {"name": "Brown Rice", "calories": 150, "protein": 3, "carbs": 32, "fat": 1, "meal_type": "dinner"},
-    {"name": "Lean Beef Strips", "calories": 250, "protein": 25, "carbs": 0, "fat": 15, "meal_type": "dinner"},
-    {"name": "Stir Fry Vegetables", "calories": 100, "protein": 4, "carbs": 15, "fat": 3, "meal_type": "dinner"},
-    {"name": "Soy Sauce", "calories": 20, "protein": 2, "carbs": 4, "fat": 0, "meal_type": "dinner"},
-    {"name": "Whole Wheat Pasta", "calories": 200, "protein": 8, "carbs": 40, "fat": 1, "meal_type": "dinner"},
-    {"name": "Tomato Sauce", "calories": 80, "protein": 2, "carbs": 12, "fat": 3, "meal_type": "dinner"},
-    {"name": "Parmesan Cheese", "calories": 120, "protein": 8, "carbs": 2, "fat": 8, "meal_type": "dinner"},
-    {"name": "Chickpeas", "calories": 150, "protein": 8, "carbs": 25, "fat": 3, "meal_type": "dinner"},
-    {"name": "Coconut Milk", "calories": 100, "protein": 1, "carbs": 2, "fat": 10, "meal_type": "dinner"},
-    {"name": "Curry Spices", "calories": 20, "protein": 1, "carbs": 4, "fat": 0, "meal_type": "dinner"},
+    {"name": "Salmon Fillet", "calories": 300, "protein": 35, "carbs": 0, "fat": 18, "meal_type": "dinner", "vegetarian": False, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Steamed Broccoli", "calories": 50, "protein": 4, "carbs": 10, "fat": 0, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Brown Rice", "calories": 150, "protein": 3, "carbs": 32, "fat": 1, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Lean Beef Strips", "calories": 250, "protein": 25, "carbs": 0, "fat": 15, "meal_type": "dinner", "vegetarian": False, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Stir Fry Vegetables", "calories": 100, "protein": 4, "carbs": 15, "fat": 3, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Soy Sauce", "calories": 20, "protein": 2, "carbs": 4, "fat": 0, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Whole Wheat Pasta", "calories": 200, "protein": 8, "carbs": 40, "fat": 1, "meal_type": "dinner", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
+    {"name": "Tomato Sauce", "calories": 80, "protein": 2, "carbs": 12, "fat": 3, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Parmesan Cheese", "calories": 120, "protein": 8, "carbs": 2, "fat": 8, "meal_type": "dinner", "vegetarian": True, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Chickpeas", "calories": 150, "protein": 8, "carbs": 25, "fat": 3, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Coconut Milk", "calories": 100, "protein": 1, "carbs": 2, "fat": 10, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Curry Spices", "calories": 20, "protein": 1, "carbs": 4, "fat": 0, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
     
     # Snack dishes
-    {"name": "Apple", "calories": 80, "protein": 0, "carbs": 21, "fat": 0, "meal_type": "snack"},
-    {"name": "Peanut Butter", "calories": 120, "protein": 6, "carbs": 4, "fat": 10, "meal_type": "snack"},
-    {"name": "Mixed Nuts", "calories": 180, "protein": 6, "carbs": 8, "fat": 16, "meal_type": "snack"},
-    {"name": "Carrot Sticks", "calories": 50, "protein": 1, "carbs": 12, "fat": 0, "meal_type": "snack"},
-    {"name": "Hummus", "calories": 100, "protein": 4, "carbs": 8, "fat": 6, "meal_type": "snack"},
-    {"name": "Greek Yogurt", "calories": 120, "protein": 15, "carbs": 8, "fat": 2, "meal_type": "snack"},
+    {"name": "Apple", "calories": 80, "protein": 0, "carbs": 21, "fat": 0, "meal_type": "snack", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Peanut Butter", "calories": 120, "protein": 6, "carbs": 4, "fat": 10, "meal_type": "snack", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Mixed Nuts", "calories": 180, "protein": 6, "carbs": 8, "fat": 16, "meal_type": "snack", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Carrot Sticks", "calories": 50, "protein": 1, "carbs": 12, "fat": 0, "meal_type": "snack", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Hummus", "calories": 100, "protein": 4, "carbs": 8, "fat": 6, "meal_type": "snack", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Greek Yogurt", "calories": 120, "protein": 15, "carbs": 8, "fat": 2, "meal_type": "snack", "vegetarian": True, "vegan": False, "gluten_free": True, "low_carb": True},
 ]
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/plan')
+@app.route('/plan', methods=['GET'])
 def plan():
     return render_template('plan.html')
 
@@ -93,6 +98,7 @@ def meals():
 def generate_plan():
     data = request.get_json()
     target_calories = int(data.get('target_calories', 2000))
+    preferences = data.get('preferences', [])
     
     # Calculate meal distribution (40% breakfast, 30% lunch, 25% dinner, 5% snack)
     breakfast_calories = int(target_calories * 0.4)
@@ -100,11 +106,11 @@ def generate_plan():
     dinner_calories = int(target_calories * 0.25)
     snack_calories = int(target_calories * 0.05)
     
-    # Get dishes for each meal type
-    breakfast_dishes = Dish.query.filter_by(meal_type='breakfast').all()
-    lunch_dishes = Dish.query.filter_by(meal_type='lunch').all()
-    dinner_dishes = Dish.query.filter_by(meal_type='dinner').all()
-    snack_dishes = Dish.query.filter_by(meal_type='snack').all()
+    # Get dishes for each meal type, filtered by preferences
+    breakfast_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='breakfast').all(), preferences)
+    lunch_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='lunch').all(), preferences)
+    dinner_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='dinner').all(), preferences)
+    snack_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='snack').all(), preferences)
     
     # Generate meal combinations
     breakfast = generate_meal_combination(breakfast_dishes, breakfast_calories, 2, 3)
@@ -165,6 +171,21 @@ def generate_meal_combination(dishes, target_calories, min_dishes=2, max_dishes=
         'total_fat': total_fat
     }
 
+def filter_dishes_by_preferences(dishes, preferences):
+    if not preferences:
+        return dishes
+    filtered = []
+    for dish in dishes:
+        if (
+            ('vegetarian' in preferences and not dish.vegetarian) or
+            ('vegan' in preferences and not dish.vegan) or
+            ('gluten_free' in preferences and not dish.gluten_free) or
+            ('low_carb' in preferences and not dish.low_carb)
+        ):
+            continue
+        filtered.append(dish)
+    return filtered
+
 @app.route('/api/dishes', methods=['GET'])
 def get_dishes():
     meal_type = request.args.get('type')
@@ -184,16 +205,22 @@ def add_dish():
         protein=float(data['protein']),
         carbs=float(data['carbs']),
         fat=float(data['fat']),
-        meal_type=data['meal_type']
+        meal_type=data['meal_type'],
+        vegetarian=data.get('vegetarian', False),
+        vegan=data.get('vegan', False),
+        gluten_free=data.get('gluten_free', False),
+        low_carb=data.get('low_carb', False)
     )
     db.session.add(dish)
     db.session.commit()
     return jsonify(dish.to_dict()), 201
 
 def init_db():
+    db_path = 'meals.db'
+    if os.path.exists(db_path):
+        os.remove(db_path)
     with app.app_context():
         db.create_all()
-        
         # Add sample dishes if database is empty
         if Dish.query.count() == 0:
             for dish_data in SAMPLE_DISHES:
@@ -210,10 +237,19 @@ def dish_to_dict(self):
         'protein': self.protein,
         'carbs': self.carbs,
         'fat': self.fat,
-        'meal_type': self.meal_type
+        'meal_type': self.meal_type,
+        'vegetarian': self.vegetarian,
+        'vegan': self.vegan,
+        'gluten_free': self.gluten_free,
+        'low_carb': self.low_carb
     }
 
 Dish.to_dict = dish_to_dict
+
+# Optional: Add a global error handler for 403 to help debug
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template('error.html', message='403 Forbidden: You do not have permission to access this page.'), 403
 
 if __name__ == '__main__':
     init_db()

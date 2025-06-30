@@ -19,6 +19,25 @@
                                value="2000" min="1200" max="5000" step="50">
                         <div class="form-text">Recommended: 1500-2500 calories per day</div>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dietary Preferences</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="vegetarian" id="prefVegetarian">
+                            <label class="form-check-label" for="prefVegetarian">Vegetarian</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="vegan" id="prefVegan">
+                            <label class="form-check-label" for="prefVegan">Vegan</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="gluten_free" id="prefGlutenFree">
+                            <label class="form-check-label" for="prefGlutenFree">Gluten-Free</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="low_carb" id="prefLowCarb">
+                            <label class="form-check-label" for="prefLowCarb">Low-Carb</label>
+                        </div>
+                    </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Quick Presets</label>
@@ -145,19 +164,24 @@ document.getElementById('planForm').addEventListener('submit', function(e) {
 
 function generateMealPlan() {
     const targetCalories = document.getElementById('targetCalories').value;
-    
+    // Gather preferences
+    const preferences = [];
+    if (document.getElementById('prefVegetarian').checked) preferences.push('vegetarian');
+    if (document.getElementById('prefVegan').checked) preferences.push('vegan');
+    if (document.getElementById('prefGlutenFree').checked) preferences.push('gluten_free');
+    if (document.getElementById('prefLowCarb').checked) preferences.push('low_carb');
     // Show loading
     document.getElementById('welcomeSection').style.display = 'none';
     document.getElementById('mealPlanSection').style.display = 'none';
     document.getElementById('loadingSection').style.display = 'block';
-    
     fetch('/api/generate_plan', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            target_calories: parseInt(targetCalories)
+            target_calories: parseInt(targetCalories),
+            preferences: preferences
         })
     })
     .then(response => response.json())
