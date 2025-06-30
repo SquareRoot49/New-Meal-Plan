@@ -33,3 +33,21 @@ Right now, each meal (breakfast, lunch, dinner, snack) only shows one item. I wa
   - Display total nutritional values at the top of each meal card  
   - List 2–3 dishes per meal, each showing its own nutrition  
 - Updated logic to ensure the top-level daily totals reflect the sum of all dishes across all meals
+
+## Prompt 3 – 2025-06-30
+
+**Prompt:**  
+For each meal section (breakfast, lunch, dinner, snack), I want to add a pie chart that shows the calorie distribution across its dishes. Each chart should display the proportion of calories from each dish in that meal.
+
+**Files Modified:**  
+- templates/plan.html  
+- static/js/app.js  
+- static/css/style.css  
+- (possibly app.py or the backend if any changes were made to pass dish-level calorie data to the frontend)
+
+**Description of Change:**  
+- Added a pie chart to each meal card (breakfast, lunch, dinner, snack) showing the calorie distribution across its individual dishes
+- Used Chart.js (or a similar JS charting library) to render the charts in the frontend
+- Updated `plan.html` to include canvas elements for each chart
+- Enhanced `app.js` to dynamically populate the calorie values for each chart based on the meal data
+- Adjusted layout and styles in `style.css` to position the charts cleanly within each card

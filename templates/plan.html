@@ -211,12 +211,19 @@ function displayMealPlan(plan) {
             mealsContainer.appendChild(mealCard);
         }
     });
+    // Render pie charts for each meal
+    mealTypes.forEach(mealType => {
+        const meal = plan[mealType.key];
+        if (meal) {
+            renderMealPieChart(meal, mealType.key);
+        }
+    });
 }
 
 function createMealCard(meal, mealType) {
     const col = document.createElement('div');
     col.className = 'col-md-6';
-    
+    const chartId = `chart-${mealType.key}`;
     const dishesList = meal.dishes.map(dish => `
         <div class="dish-item d-flex justify-content-between align-items-center py-2 border-bottom">
             <div class="dish-info">
@@ -227,7 +234,6 @@ function createMealCard(meal, mealType) {
             </div>
         </div>
     `).join('');
-    
     col.innerHTML = `
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-${mealType.color} text-white">
@@ -242,7 +248,9 @@ function createMealCard(meal, mealType) {
                 <div class="dishes-list mb-3">
                     ${dishesList}
                 </div>
-                
+                <div class="meal-chart-container mb-3">
+                    <canvas id="${chartId}" class="meal-pie-chart"></canvas>
+                </div>
                 <div class="meal-totals bg-light p-3 rounded">
                     <h6 class="text-center mb-2">Meal Totals</h6>
                     <div class="row text-center">
@@ -275,8 +283,52 @@ function createMealCard(meal, mealType) {
             </div>
         </div>
     `;
-    
     return col;
+}
+
+function renderMealPieChart(meal, mealKey) {
+    const ctx = document.getElementById(`chart-${mealKey}`);
+    if (!ctx) return;
+    const labels = meal.dishes.map(d => d.name);
+    const data = meal.dishes.map(d => d.calories);
+    const backgroundColors = [
+        '#0d6efd', '#198754', '#ffc107', '#dc3545', '#0dcaf0', '#6f42c1', '#fd7e14', '#20c997', '#6610f2', '#e83e8c'
+    ];
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: backgroundColors.slice(0, data.length),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 16,
+                        font: { size: 13 }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const percent = meal.total_calories ? ((value / meal.total_calories) * 100).toFixed(1) : 0;
+                            return `${label}: ${value} cal (${percent}%)`;
+                        }
+                    }
+                }
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+        }
+    });
 }
 
 function generateNewPlan() {
