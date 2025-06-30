@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Plan Meals - Meal Planner{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-calculator me-2"></i>Set Your Goals
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="planForm">
+                    <div class="mb-3">
+                        <label for="targetCalories" class="form-label">Daily Calorie Target</label>
+                        <input type="number" class="form-control" id="targetCalories" 
+                               value="2000" min="1200" max="5000" step="50">
+                        <div class="form-text">Recommended: 1500-2500 calories per day</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Quick Presets</label>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                    onclick="setCalories(1500)">Weight Loss (1500)</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                    onclick="setCalories(2000)">Maintenance (2000)</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                    onclick="setCalories(2500)">Weight Gain (2500)</button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-magic me-2"></i>Generate Meal Plan
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Nutrition Tips
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Aim for 40% breakfast, 30% lunch, 25% dinner, 5% snack
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Include protein with every meal
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Choose whole grains over refined carbs
+                    </li>
+                    <li>
+                        <i class="fas fa-check text-success me-2"></i>
+                        Stay hydrated throughout the day
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div id="loadingSection" class="text-center py-5" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Generating your personalized meal plan...</p>
+        </div>
+        
+        <div id="mealPlanSection" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>Your Daily Meal Plan</h3>
+                <button class="btn btn-outline-primary" onclick="generateNewPlan()">
+                    <i class="fas fa-refresh me-2"></i>Generate New Plan
+                </button>
+            </div>
+            
+            <div id="nutritionSummary" class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h4 class="text-primary" id="totalCalories">0</h4>
+                            <p class="text-muted mb-0">Total Calories</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-success" id="totalProtein">0g</h4>
+                            <p class="text-muted mb-0">Protein</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-warning" id="totalCarbs">0g</h4>
+                            <p class="text-muted mb-0">Carbohydrates</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-danger" id="totalFat">0g</h4>
+                            <p class="text-muted mb-0">Fat</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-4" id="mealsContainer">
+                <!-- Meals will be populated here -->
+            </div>
+        </div>
+        
+        <div id="welcomeSection" class="text-center py-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body py-5">
+                    <i class="fas fa-utensils fa-4x text-muted mb-4"></i>
+                    <h4>Ready to Plan Your Meals?</h4>
+                    <p class="text-muted">
+                        Set your daily calorie target and click "Generate Meal Plan" to get started.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function setCalories(calories) {
+    document.getElementById('targetCalories').value = calories;
+}
+
+document.getElementById('planForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    generateMealPlan();
+});
+
+function generateMealPlan() {
+    const targetCalories = document.getElementById('targetCalories').value;
+    
+    // Show loading
+    document.getElementById('welcomeSection').style.display = 'none';
+    document.getElementById('mealPlanSection').style.display = 'none';
+    document.getElementById('loadingSection').style.display = 'block';
+    
+    fetch('/api/generate_plan', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            target_calories: parseInt(targetCalories)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        displayMealPlan(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error generating meal plan. Please try again.');
+    });
+}
+
+function displayMealPlan(plan) {
+    // Hide loading, show plan
+    document.getElementById('loadingSection').style.display = 'none';
+    document.getElementById('mealPlanSection').style.display = 'block';
+    
+    // Update nutrition summary
+    document.getElementById('totalCalories').textContent = plan.total_calories;
+    
+    let totalProtein = 0, totalCarbs = 0, totalFat = 0;
+    const meals = [plan.breakfast, plan.lunch, plan.dinner, plan.snack];
+    
+    meals.forEach(meal => {
+        if (meal) {
+            totalProtein += meal.protein;
+            totalCarbs += meal.carbs;
+            totalFat += meal.fat;
+        }
+    });
+    
+    document.getElementById('totalProtein').textContent = totalProtein.toFixed(1) + 'g';
+    document.getElementById('totalCarbs').textContent = totalCarbs.toFixed(1) + 'g';
+    document.getElementById('totalFat').textContent = totalFat.toFixed(1) + 'g';
+    
+    // Display meals
+    const mealsContainer = document.getElementById('mealsContainer');
+    mealsContainer.innerHTML = '';
+    
+    const mealTypes = [
+        { key: 'breakfast', title: 'Breakfast', icon: 'fas fa-sun', color: 'warning' },
+        { key: 'lunch', title: 'Lunch', icon: 'fas fa-cloud-sun', color: 'success' },
+        { key: 'dinner', title: 'Dinner', icon: 'fas fa-moon', color: 'primary' },
+        { key: 'snack', title: 'Snack', icon: 'fas fa-cookie-bite', color: 'info' }
+    ];
+    
+    mealTypes.forEach(mealType => {
+        const meal = plan[mealType.key];
+        if (meal) {
+            const mealCard = createMealCard(meal, mealType);
+            mealsContainer.appendChild(mealCard);
+        }
+    });
+}
+
+function createMealCard(meal, mealType) {
+    const col = document.createElement('div');
+    col.className = 'col-md-6';
+    
+    col.innerHTML = `
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-${mealType.color} text-white">
+                <h6 class="mb-0">
+                    <i class="${mealType.icon} me-2"></i>${mealType.title}
+                </h6>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">${meal.name}</h5>
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <div class="nutrition-item">
+                            <h6 class="text-primary mb-1">${meal.calories}</h6>
+                            <small class="text-muted">Calories</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="nutrition-item">
+                            <h6 class="text-success mb-1">${meal.protein}g</h6>
+                            <small class="text-muted">Protein</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="nutrition-item">
+                            <h6 class="text-warning mb-1">${meal.carbs}g</h6>
+                            <small class="text-muted">Carbs</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <span class="badge bg-secondary">${meal.fat}g Fat</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return col;
+}
+
+function generateNewPlan() {
+    generateMealPlan();
+}
+</script>
+{% endblock %} 

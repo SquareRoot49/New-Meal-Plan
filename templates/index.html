@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Meal Planner{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="display-4 fw-bold text-primary mb-4">
+                <i class="fas fa-utensils me-3"></i>Smart Meal Planning
+            </h1>
+            <p class="lead mb-4">
+                Plan your daily meals based on your calorie goals. Get personalized meal suggestions 
+                that fit your nutritional needs and preferences.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('plan') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-calendar-plus me-2"></i>Start Planning
+                </a>
+                <a href="{{ url_for('meals') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-database me-2"></i>Browse Meals
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="features-section py-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-calculator fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title">Calorie Calculator</h5>
+                    <p class="card-text">
+                        Set your daily calorie target and let our algorithm create the perfect meal plan 
+                        that balances nutrition and taste.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-apple-alt fa-3x text-success"></i>
+                    </div>
+                    <h5 class="card-title">Nutritional Balance</h5>
+                    <p class="card-text">
+                        Each meal plan includes detailed nutritional information including protein, 
+                        carbohydrates, and healthy fats.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-mobile-alt fa-3x text-info"></i>
+                    </div>
+                    <h5 class="card-title">Mobile Friendly</h5>
+                    <p class="card-text">
+                        Access your meal plans anywhere with our responsive design that works perfectly 
+                        on all devices.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="stats-section py-5 bg-light">
+    <div class="row text-center">
+        <div class="col-md-3">
+            <div class="stat-item">
+                <h3 class="text-primary fw-bold">16+</h3>
+                <p class="text-muted">Pre-loaded Meals</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-item">
+                <h3 class="text-success fw-bold">4</h3>
+                <p class="text-muted">Meal Types</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-item">
+                <h3 class="text-info fw-bold">100%</h3>
+                <p class="text-muted">Free to Use</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-item">
+                <h3 class="text-warning fw-bold">24/7</h3>
+                <p class="text-muted">Available</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="how-it-works py-5">
+    <h2 class="text-center mb-5">How It Works</h2>
+    <div class="row g-4">
+        <div class="col-md-4 text-center">
+            <div class="step-number mb-3">
+                <span class="badge bg-primary rounded-circle p-3">1</span>
+            </div>
+            <h5>Set Your Goals</h5>
+            <p>Enter your daily calorie target and dietary preferences.</p>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="step-number mb-3">
+                <span class="badge bg-primary rounded-circle p-3">2</span>
+            </div>
+            <h5>Generate Plan</h5>
+            <p>Our algorithm creates a balanced meal plan for your day.</p>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="step-number mb-3">
+                <span class="badge bg-primary rounded-circle p-3">3</span>
+            </div>
+            <h5>Follow & Enjoy</h5>
+            <p>Follow your personalized meal plan and track your progress.</p>
+        </div>
+    </div>
+</div>
+{% endblock %} 
