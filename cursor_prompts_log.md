@@ -80,3 +80,28 @@ Please update the frontend to show these checkboxes and the backend logic to fil
 - Updated backend filtering logic in `app.py` to exclude dishes that don't match all selected dietary tags  
 - Annotated dishes in the database (or internal dish list) with dietary metadata  
 - Ensured generated meals for each section (breakfast, lunch, dinner, snack) now respect the user’s selected dietary restrictions  
+
+## Prompt 5 – 2025-06-30
+
+**Prompt:**  
+I want to add an "Activity Level" selection to the meal planner interface. Users should be able to choose their level of physical activity from a dropdown menu.
+
+This dropdown should appear below the "Dietary Preferences" section.
+
+Please update both the frontend and backend logic to apply this multiplier to the user's calorie goal when generating the plan.
+
+**Files Modified:**  
+- templates/index.html  
+- app.py  
+- static/css/style.css (if styling was added)
+
+**Description of Change:**  
+- Added a dropdown menu labeled "Activity Level" below the "Dietary Preferences" section in the form  
+- Provided five options for user selection:
+  - Sedentary (×1.2)  
+  - Lightly Active (×1.375)  
+  - Moderately Active (×1.55)  
+  - Very Active (×1.725)  
+  - Extra Active (×1.9)
+- Updated backend logic in `app.py` to read the selected activity level and apply the corresponding multiplier to the user-entered base calorie target  
+- Adjusted the total calorie goal accordingly before generating the meal plan

@@ -99,38 +99,36 @@ def generate_plan():
     data = request.get_json()
     target_calories = int(data.get('target_calories', 2000))
     preferences = data.get('preferences', [])
-    
+    activity_multiplier = float(data.get('activity_multiplier', 1.2))
+    # Apply activity multiplier
+    adjusted_calories = int(target_calories * activity_multiplier)
     # Calculate meal distribution (40% breakfast, 30% lunch, 25% dinner, 5% snack)
-    breakfast_calories = int(target_calories * 0.4)
-    lunch_calories = int(target_calories * 0.3)
-    dinner_calories = int(target_calories * 0.25)
-    snack_calories = int(target_calories * 0.05)
-    
+    breakfast_calories = int(adjusted_calories * 0.4)
+    lunch_calories = int(adjusted_calories * 0.3)
+    dinner_calories = int(adjusted_calories * 0.25)
+    snack_calories = int(adjusted_calories * 0.05)
     # Get dishes for each meal type, filtered by preferences
     breakfast_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='breakfast').all(), preferences)
     lunch_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='lunch').all(), preferences)
     dinner_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='dinner').all(), preferences)
     snack_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='snack').all(), preferences)
-    
     # Generate meal combinations
     breakfast = generate_meal_combination(breakfast_dishes, breakfast_calories, 2, 3)
     lunch = generate_meal_combination(lunch_dishes, lunch_calories, 2, 3)
     dinner = generate_meal_combination(dinner_dishes, dinner_calories, 2, 3)
     snack = generate_meal_combination(snack_dishes, snack_calories, 1, 2)
-    
     # Calculate totals
     all_meals = [breakfast, lunch, dinner, snack]
     total_calories = sum(meal['total_calories'] for meal in all_meals if meal)
-    
     plan = {
         'breakfast': breakfast,
         'lunch': lunch,
         'dinner': dinner,
         'snack': snack,
         'total_calories': total_calories,
-        'target_calories': target_calories
+        'target_calories': adjusted_calories,
+        'activity_multiplier': activity_multiplier
     }
-    
     return jsonify(plan)
 
 def generate_meal_combination(dishes, target_calories, min_dishes=2, max_dishes=3):
