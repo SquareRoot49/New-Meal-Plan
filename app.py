@@ -79,6 +79,12 @@ SAMPLE_DISHES = [
     {"name": "Carrot Sticks", "calories": 50, "protein": 1, "carbs": 12, "fat": 0, "meal_type": "snack", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
     {"name": "Hummus", "calories": 100, "protein": 4, "carbs": 8, "fat": 6, "meal_type": "snack", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
     {"name": "Greek Yogurt", "calories": 120, "protein": 15, "carbs": 8, "fat": 2, "meal_type": "snack", "vegetarian": True, "vegan": False, "gluten_free": True, "low_carb": True},
+    # Afternoon Tea dishes
+    {"name": "Green Tea", "calories": 2, "protein": 0, "carbs": 0, "fat": 0, "meal_type": "afternoon_tea", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Scone", "calories": 180, "protein": 4, "carbs": 30, "fat": 6, "meal_type": "afternoon_tea", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
+    {"name": "Fruit Tart", "calories": 220, "protein": 3, "carbs": 35, "fat": 9, "meal_type": "afternoon_tea", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
+    {"name": "Cucumber Sandwich", "calories": 120, "protein": 3, "carbs": 20, "fat": 3, "meal_type": "afternoon_tea", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
+    {"name": "Mini Quiche", "calories": 150, "protein": 6, "carbs": 10, "fat": 9, "meal_type": "afternoon_tea", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
 ]
 
 @app.route('/')
@@ -102,28 +108,32 @@ def generate_plan():
     activity_multiplier = float(data.get('activity_multiplier', 1.2))
     # Apply activity multiplier
     adjusted_calories = int(target_calories * activity_multiplier)
-    # Calculate meal distribution (40% breakfast, 30% lunch, 25% dinner, 5% snack)
-    breakfast_calories = int(adjusted_calories * 0.4)
-    lunch_calories = int(adjusted_calories * 0.3)
-    dinner_calories = int(adjusted_calories * 0.25)
-    snack_calories = int(adjusted_calories * 0.05)
+    # Calculate meal distribution (e.g., 35% breakfast, 25% lunch, 20% dinner, 10% afternoon tea, 10% snack)
+    breakfast_calories = int(adjusted_calories * 0.35)
+    lunch_calories = int(adjusted_calories * 0.25)
+    dinner_calories = int(adjusted_calories * 0.2)
+    afternoon_tea_calories = int(adjusted_calories * 0.1)
+    snack_calories = int(adjusted_calories * 0.1)
     # Get dishes for each meal type, filtered by preferences
     breakfast_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='breakfast').all(), preferences)
     lunch_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='lunch').all(), preferences)
     dinner_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='dinner').all(), preferences)
+    afternoon_tea_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='afternoon_tea').all(), preferences)
     snack_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='snack').all(), preferences)
     # Generate meal combinations
     breakfast = generate_meal_combination(breakfast_dishes, breakfast_calories, 2, 3)
     lunch = generate_meal_combination(lunch_dishes, lunch_calories, 2, 3)
     dinner = generate_meal_combination(dinner_dishes, dinner_calories, 2, 3)
+    afternoon_tea = generate_meal_combination(afternoon_tea_dishes, afternoon_tea_calories, 1, 2)
     snack = generate_meal_combination(snack_dishes, snack_calories, 1, 2)
     # Calculate totals
-    all_meals = [breakfast, lunch, dinner, snack]
+    all_meals = [breakfast, lunch, dinner, afternoon_tea, snack]
     total_calories = sum(meal['total_calories'] for meal in all_meals if meal)
     plan = {
         'breakfast': breakfast,
         'lunch': lunch,
         'dinner': dinner,
+        'afternoon_tea': afternoon_tea,
         'snack': snack,
         'total_calories': total_calories,
         'target_calories': adjusted_calories,

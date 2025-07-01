@@ -105,3 +105,25 @@ Please update both the frontend and backend logic to apply this multiplier to th
   - Extra Active (×1.9)
 - Updated backend logic in `app.py` to read the selected activity level and apply the corresponding multiplier to the user-entered base calorie target  
 - Adjusted the total calorie goal accordingly before generating the meal plan
+
+## Prompt 6 – 2025-06-30
+
+**Prompt:**  
+I want to add a fifth meal section called "Afternoon Tea" to my meal planner.
+
+**Files Modified:**  
+- templates/plan.html  
+- app.py  
+- static/js/app.js  
+- static/css/style.css (if any adjustments were made)  
+
+**Description of Change:**  
+- Added a new meal type called "Afternoon Tea" alongside Breakfast, Lunch, Dinner, and Snack  
+- Updated the backend logic to generate and return a fifth meal under the key `afternoon_tea`  
+- Adjusted nutrition summary calculations to include data from the fifth meal  
+- Rendered the new section in the frontend UI with:
+  - Meal title
+  - 2–3 dishes
+  - Pie chart showing calorie distribution among dishes
+  - Total nutrition summary
+- Ensured consistent styling and behavior with other meal sections

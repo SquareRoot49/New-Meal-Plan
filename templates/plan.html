@@ -79,7 +79,7 @@
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2">
                         <i class="fas fa-check text-success me-2"></i>
-                        Aim for 40% breakfast, 30% lunch, 25% dinner, 5% snack
+                        Aim for 35% breakfast, 25% lunch, 20% dinner, 10% afternoon tea, 10% snack
                     </li>
                     <li class="mb-2">
                         <i class="fas fa-check text-success me-2"></i>
@@ -217,7 +217,7 @@ function displayMealPlan(plan) {
     document.getElementById('totalCalories').textContent = plan.total_calories;
     
     let totalProtein = 0, totalCarbs = 0, totalFat = 0;
-    const meals = [plan.breakfast, plan.lunch, plan.dinner, plan.snack];
+    const meals = [plan.breakfast, plan.lunch, plan.dinner, plan.afternoon_tea, plan.snack];
     
     meals.forEach(meal => {
         if (meal) {
@@ -239,7 +239,8 @@ function displayMealPlan(plan) {
         { key: 'breakfast', title: 'Breakfast', icon: 'fas fa-sun', color: 'warning' },
         { key: 'lunch', title: 'Lunch', icon: 'fas fa-cloud-sun', color: 'success' },
         { key: 'dinner', title: 'Dinner', icon: 'fas fa-moon', color: 'primary' },
-        { key: 'snack', title: 'Snack', icon: 'fas fa-cookie-bite', color: 'info' }
+        { key: 'snack', title: 'Snack', icon: 'fas fa-cookie-bite', color: 'secondary' },
+        { key: 'afternoon_tea', title: 'Afternoon Tea', icon: 'fas fa-mug-hot', color: 'info' }
     ];
     
     mealTypes.forEach(mealType => {
