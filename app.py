@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import random
 import os
+from sqlalchemy.types import JSON as SQLAlchemyJSON
+import json
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///meals.db'
@@ -33,6 +35,15 @@ class MealPlan(db.Model):
     dinner_dishes = db.Column(db.String(500))
     snack_dishes = db.Column(db.String(500))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class SavedPlan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    total_calories = db.Column(db.Integer, nullable=False)
+    total_protein = db.Column(db.Float, nullable=False)
+    total_carbs = db.Column(db.Float, nullable=False)
+    total_fat = db.Column(db.Float, nullable=False)
+    plan_data = db.Column(db.Text, nullable=False)  # JSON-encoded meal plan
 
 # Sample dish data
 SAMPLE_DISHES = [
@@ -222,6 +233,48 @@ def add_dish():
     db.session.add(dish)
     db.session.commit()
     return jsonify(dish.to_dict()), 201
+
+@app.route('/saved')
+def saved():
+    plans = SavedPlan.query.order_by(SavedPlan.timestamp.desc()).all()
+    return render_template('saved.html', plans=plans)
+
+@app.route('/api/save_plan', methods=['POST'])
+def save_plan():
+    data = request.get_json()
+    plan = data.get('plan')
+    if not plan:
+        return jsonify({'error': 'No plan data provided'}), 400
+    # Calculate totals
+    total_calories = plan.get('total_calories', 0)
+    total_protein = 0
+    total_carbs = 0
+    total_fat = 0
+    for meal_key in ['breakfast', 'lunch', 'dinner', 'snack', 'afternoon_tea']:
+        meal = plan.get(meal_key)
+        if meal:
+            total_protein += meal.get('total_protein', 0)
+            total_carbs += meal.get('total_carbs', 0)
+            total_fat += meal.get('total_fat', 0)
+    saved = SavedPlan(
+        total_calories=total_calories,
+        total_protein=total_protein,
+        total_carbs=total_carbs,
+        total_fat=total_fat,
+        plan_data=json.dumps(plan)
+    )
+    db.session.add(saved)
+    db.session.commit()
+    return jsonify({'success': True, 'id': saved.id})
+
+@app.route('/api/delete_plan/<int:plan_id>', methods=['POST'])
+def delete_plan(plan_id):
+    plan = SavedPlan.query.get(plan_id)
+    if not plan:
+        return jsonify({'error': 'Plan not found'}), 404
+    db.session.delete(plan)
+    db.session.commit()
+    return jsonify({'success': True})
 
 def init_db():
     db_path = 'meals.db'

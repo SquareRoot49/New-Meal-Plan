@@ -144,6 +144,12 @@
             <div class="row g-4" id="mealsContainer">
                 <!-- Meals will be populated here -->
             </div>
+            <div class="text-end mt-4">
+                <button class="btn btn-success" id="savePlanBtn" onclick="saveCurrentPlan()">
+                    <i class="fas fa-save me-2"></i>Save Plan
+                </button>
+                <span id="savePlanMsg" class="ms-3 text-success" style="display:none;">Plan saved!</span>
+            </div>
         </div>
         
         <div id="welcomeSection" class="text-center py-5">
@@ -208,7 +214,9 @@ function generateMealPlan() {
     });
 }
 
+let lastGeneratedPlan = null;
 function displayMealPlan(plan) {
+    lastGeneratedPlan = plan;
     // Hide loading, show plan
     document.getElementById('loadingSection').style.display = 'none';
     document.getElementById('mealPlanSection').style.display = 'block';
@@ -372,6 +380,22 @@ function renderMealPieChart(meal, mealKey) {
 
 function generateNewPlan() {
     generateMealPlan();
+}
+
+function saveCurrentPlan() {
+    if (!lastGeneratedPlan) return;
+    fetch('/api/save_plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: lastGeneratedPlan })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('savePlanMsg').style.display = '';
+            setTimeout(() => { document.getElementById('savePlanMsg').style.display = 'none'; }, 2000);
+        }
+    });
 }
 </script>
 {% endblock %} 

@@ -127,3 +127,28 @@ I want to add a fifth meal section called "Afternoon Tea" to my meal planner.
   - Pie chart showing calorie distribution among dishes
   - Total nutrition summary
 - Ensured consistent styling and behavior with other meal sections
+
+## Prompt 7 – 2025-06-30
+
+**Prompt:**  
+I want to add a "Saved Plan" feature to my meal planner. Users should be able to save the currently generated meal plan and later view all saved plans on a dedicated page.
+
+**Files Modified:**  
+- templates/base.html  
+- templates/plan.html  
+- templates/saved.html (new)  
+- app.py  
+- static/js/app.js  
+- instance/meals.db (schema updated)
+
+**Description of Change:**  
+- Added a new navigation link labeled “Saved Plan” to the top-right navbar in the UI  
+- Created a new page `saved.html` to list all previously saved meal plans  
+- Added a “Save Plan” button to the plan interface that sends the current meal plan to the backend  
+- Updated backend logic in `app.py` to:  
+  - Define a new `SavedPlan` model for storing saved plans with timestamp and nutrient summary  
+  - Add a POST route `/api/save_plan` to store submitted plans in the database  
+  - Add a GET route `/saved` to display saved plans via the new HTML page  
+- Modified the database schema to include a `saved_plans` table  
+- Ensured saved plans persist across sessions and can be browsed from the Saved Plan page
+
