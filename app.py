@@ -5,8 +5,6 @@ import random
 import os
 from sqlalchemy.types import JSON as SQLAlchemyJSON
 import json
-import pandas as pd
-import ast
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///meals.db'
@@ -47,6 +45,59 @@ class SavedPlan(db.Model):
     total_fat = db.Column(db.Float, nullable=False)
     plan_data = db.Column(db.Text, nullable=False)  # JSON-encoded meal plan
 
+# Sample dish data
+SAMPLE_DISHES = [
+    # Breakfast dishes
+    {"name": "Oatmeal", "calories": 150, "protein": 6, "carbs": 27, "fat": 3, "meal_type": "breakfast", "vegetarian": True, "vegan": True, "gluten_free": False, "low_carb": False},
+    {"name": "Fresh Berries", "calories": 50, "protein": 1, "carbs": 12, "fat": 0, "meal_type": "breakfast", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Greek Yogurt", "calories": 120, "protein": 15, "carbs": 8, "fat": 2, "meal_type": "breakfast", "vegetarian": True, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Honey", "calories": 60, "protein": 0, "carbs": 17, "fat": 0, "meal_type": "breakfast", "vegetarian": True, "vegan": False, "gluten_free": True, "low_carb": False},
+    {"name": "Scrambled Eggs", "calories": 200, "protein": 14, "carbs": 2, "fat": 15, "meal_type": "breakfast", "vegetarian": True, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Whole Grain Toast", "calories": 80, "protein": 4, "carbs": 15, "fat": 1, "meal_type": "breakfast", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
+    {"name": "Banana", "calories": 100, "protein": 1, "carbs": 26, "fat": 0, "meal_type": "breakfast", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Almond Butter", "calories": 100, "protein": 4, "carbs": 3, "fat": 8, "meal_type": "breakfast", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    
+    # Lunch dishes
+    {"name": "Grilled Chicken Breast", "calories": 250, "protein": 35, "carbs": 0, "fat": 12, "meal_type": "lunch", "vegetarian": False, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Mixed Greens", "calories": 20, "protein": 2, "carbs": 4, "fat": 0, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Cherry Tomatoes", "calories": 30, "protein": 1, "carbs": 6, "fat": 0, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Olive Oil Dressing", "calories": 100, "protein": 0, "carbs": 0, "fat": 11, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Quinoa", "calories": 200, "protein": 8, "carbs": 39, "fat": 4, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Roasted Vegetables", "calories": 150, "protein": 4, "carbs": 25, "fat": 5, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Turkey Breast", "calories": 180, "protein": 25, "carbs": 0, "fat": 8, "meal_type": "lunch", "vegetarian": False, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Whole Grain Bread", "calories": 120, "protein": 6, "carbs": 22, "fat": 2, "meal_type": "lunch", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
+    {"name": "Lettuce", "calories": 10, "protein": 1, "carbs": 2, "fat": 0, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Mustard", "calories": 10, "protein": 0, "carbs": 2, "fat": 0, "meal_type": "lunch", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    
+    # Dinner dishes
+    {"name": "Salmon Fillet", "calories": 300, "protein": 35, "carbs": 0, "fat": 18, "meal_type": "dinner", "vegetarian": False, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Steamed Broccoli", "calories": 50, "protein": 4, "carbs": 10, "fat": 0, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Brown Rice", "calories": 150, "protein": 3, "carbs": 32, "fat": 1, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Lean Beef Strips", "calories": 250, "protein": 25, "carbs": 0, "fat": 15, "meal_type": "dinner", "vegetarian": False, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Stir Fry Vegetables", "calories": 100, "protein": 4, "carbs": 15, "fat": 3, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Soy Sauce", "calories": 20, "protein": 2, "carbs": 4, "fat": 0, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Whole Wheat Pasta", "calories": 200, "protein": 8, "carbs": 40, "fat": 1, "meal_type": "dinner", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
+    {"name": "Tomato Sauce", "calories": 80, "protein": 2, "carbs": 12, "fat": 3, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Parmesan Cheese", "calories": 120, "protein": 8, "carbs": 2, "fat": 8, "meal_type": "dinner", "vegetarian": True, "vegan": False, "gluten_free": True, "low_carb": True},
+    {"name": "Chickpeas", "calories": 150, "protein": 8, "carbs": 25, "fat": 3, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Coconut Milk", "calories": 100, "protein": 1, "carbs": 2, "fat": 10, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Curry Spices", "calories": 20, "protein": 1, "carbs": 4, "fat": 0, "meal_type": "dinner", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    
+    # Snack dishes
+    {"name": "Apple", "calories": 80, "protein": 0, "carbs": 21, "fat": 0, "meal_type": "snack", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": False},
+    {"name": "Peanut Butter", "calories": 120, "protein": 6, "carbs": 4, "fat": 10, "meal_type": "snack", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Mixed Nuts", "calories": 180, "protein": 6, "carbs": 8, "fat": 16, "meal_type": "snack", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Carrot Sticks", "calories": 50, "protein": 1, "carbs": 12, "fat": 0, "meal_type": "snack", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Hummus", "calories": 100, "protein": 4, "carbs": 8, "fat": 6, "meal_type": "snack", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Greek Yogurt", "calories": 120, "protein": 15, "carbs": 8, "fat": 2, "meal_type": "snack", "vegetarian": True, "vegan": False, "gluten_free": True, "low_carb": True},
+    # Afternoon Tea dishes
+    {"name": "Green Tea", "calories": 2, "protein": 0, "carbs": 0, "fat": 0, "meal_type": "afternoon_tea", "vegetarian": True, "vegan": True, "gluten_free": True, "low_carb": True},
+    {"name": "Scone", "calories": 180, "protein": 4, "carbs": 30, "fat": 6, "meal_type": "afternoon_tea", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
+    {"name": "Fruit Tart", "calories": 220, "protein": 3, "carbs": 35, "fat": 9, "meal_type": "afternoon_tea", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
+    {"name": "Cucumber Sandwich", "calories": 120, "protein": 3, "carbs": 20, "fat": 3, "meal_type": "afternoon_tea", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
+    {"name": "Mini Quiche", "calories": 150, "protein": 6, "carbs": 10, "fat": 9, "meal_type": "afternoon_tea", "vegetarian": True, "vegan": False, "gluten_free": False, "low_carb": False},
+]
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -65,9 +116,8 @@ def generate_plan():
     data = request.get_json()
     target_calories = int(data.get('target_calories', 2000))
     preferences = data.get('preferences', [])
-    activity_multiplier = float(data.get('activity_multiplier', 1.2))
-    # Apply activity multiplier
-    adjusted_calories = int(target_calories * activity_multiplier)
+    # Use target calories directly without activity multiplier
+    adjusted_calories = target_calories
     # Calculate meal distribution (e.g., 35% breakfast, 25% lunch, 20% dinner, 10% afternoon tea, 10% snack)
     breakfast_calories = int(adjusted_calories * 0.35)
     lunch_calories = int(adjusted_calories * 0.25)
@@ -96,8 +146,7 @@ def generate_plan():
         'afternoon_tea': afternoon_tea,
         'snack': snack,
         'total_calories': total_calories,
-        'target_calories': adjusted_calories,
-        'activity_multiplier': activity_multiplier
+        'target_calories': adjusted_calories
     }
     return jsonify(plan)
 
@@ -231,60 +280,12 @@ def init_db():
         os.remove(db_path)
     with app.app_context():
         db.create_all()
-        try:
-            # Read first 10,000 rows from CSV in data/ directory
-            df = pd.read_csv('data/RAW_recipes.csv', nrows=10000)
-            meal_types = ['breakfast', 'lunch', 'dinner', 'snack', 'afternoon_tea']
-            loaded_count = 0
-            
-            for _, row in df.iterrows():
-                try:
-                    # Parse nutrition string to list
-                    nutrition_str = row['nutrition']
-                    if not isinstance(nutrition_str, str):
-                        continue
-                    
-                    nutrition = ast.literal_eval(nutrition_str)
-                    if not (isinstance(nutrition, list) and len(nutrition) >= 4):
-                        continue
-                    
-                    # Extract nutrition values according to specification:
-                    # nutrition[0] = calories, nutrition[1] = protein, nutrition[2] = fat, nutrition[3] = carbs
-                    calories = int(nutrition[0]) if nutrition[0] > 0 else 100
-                    protein = float(nutrition[1]) if nutrition[1] > 0 else 5.0
-                    fat = float(nutrition[2]) if nutrition[2] > 0 else 5.0
-                    carbs = float(nutrition[3]) if nutrition[3] > 0 else 15.0
-                    
-                    # Randomly assign meal type
-                    meal_type = random.choice(meal_types)
-                    
-                    # Create dish
-                    dish = Dish(
-                        name=row['name'][:100],  # Truncate if too long
-                        calories=calories,
-                        protein=protein,
-                        carbs=carbs,
-                        fat=fat,
-                        meal_type=meal_type,
-                        vegetarian=False,  # Set to False for now
-                        vegan=False,
-                        gluten_free=False,
-                        low_carb=False
-                    )
-                    db.session.add(dish)
-                    loaded_count += 1
-                    
-                except (ValueError, IndexError, SyntaxError, TypeError) as e:
-                    # Skip rows with invalid data
-                    continue
-            
+        # Add sample dishes if database is empty
+        if Dish.query.count() == 0:
+            for dish_data in SAMPLE_DISHES:
+                dish = Dish(**dish_data)
+                db.session.add(dish)
             db.session.commit()
-            print(f"Loaded {loaded_count} dishes from CSV")
-            
-        except Exception as e:
-            print(f"Error loading CSV: {e}")
-            # If CSV loading fails, the database will be empty
-            pass
 
 # Add to_dict method to Dish model
 def dish_to_dict(self):
@@ -310,5 +311,5 @@ def forbidden(e):
     return render_template('error.html', message='403 Forbidden: You do not have permission to access this page.'), 403
 
 if __name__ == '__main__':
-    init_db()  # Initialize database with CSV data
-    app.run(debug=True, port=5001) 
+    init_db()
+    app.run(debug=True) 

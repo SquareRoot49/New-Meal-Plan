@@ -39,16 +39,7 @@
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label class="form-label">Activity Level</label>
-                        <select class="form-select" id="activityLevel">
-                            <option value="1.2">Sedentary (little or no exercise)</option>
-                            <option value="1.375">Lightly Active (light exercise 1-3 days/week)</option>
-                            <option value="1.55">Moderately Active (moderate exercise 3-5 days/week)</option>
-                            <option value="1.725">Very Active (hard exercise 6-7 days/week)</option>
-                            <option value="1.9">Extra Active (very hard exercise & physical job)</option>
-                        </select>
-                    </div>
+
                     
                     <div class="mb-3">
                         <label class="form-label">Quick Presets</label>
@@ -187,8 +178,6 @@ function generateMealPlan() {
     if (document.getElementById('prefVegan').checked) preferences.push('vegan');
     if (document.getElementById('prefGlutenFree').checked) preferences.push('gluten_free');
     if (document.getElementById('prefLowCarb').checked) preferences.push('low_carb');
-    // Get activity multiplier
-    const activityMultiplier = parseFloat(document.getElementById('activityLevel').value);
     // Show loading
     document.getElementById('welcomeSection').style.display = 'none';
     document.getElementById('mealPlanSection').style.display = 'none';
@@ -200,8 +189,7 @@ function generateMealPlan() {
         },
         body: JSON.stringify({
             target_calories: parseInt(targetCalories),
-            preferences: preferences,
-            activity_multiplier: activityMultiplier
+            preferences: preferences
         })
     })
     .then(response => response.json())
