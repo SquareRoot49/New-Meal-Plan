@@ -116,38 +116,51 @@ def generate_plan():
     data = request.get_json()
     target_calories = int(data.get('target_calories', 2000))
     preferences = data.get('preferences', [])
+    selected_meals = data.get('selected_meals', ['breakfast', 'lunch', 'dinner', 'snack', 'afternoon_tea'])
+    
     # Use target calories directly without activity multiplier
     adjusted_calories = target_calories
-    # Calculate meal distribution (e.g., 35% breakfast, 25% lunch, 20% dinner, 10% afternoon tea, 10% snack)
-    breakfast_calories = int(adjusted_calories * 0.35)
-    lunch_calories = int(adjusted_calories * 0.25)
-    dinner_calories = int(adjusted_calories * 0.2)
-    afternoon_tea_calories = int(adjusted_calories * 0.1)
-    snack_calories = int(adjusted_calories * 0.1)
-    # Get dishes for each meal type, filtered by preferences
-    breakfast_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='breakfast').all(), preferences)
-    lunch_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='lunch').all(), preferences)
-    dinner_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='dinner').all(), preferences)
-    afternoon_tea_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='afternoon_tea').all(), preferences)
-    snack_dishes = filter_dishes_by_preferences(Dish.query.filter_by(meal_type='snack').all(), preferences)
-    # Generate meal combinations
-    breakfast = generate_meal_combination(breakfast_dishes, breakfast_calories, 2, 3)
-    lunch = generate_meal_combination(lunch_dishes, lunch_calories, 2, 3)
-    dinner = generate_meal_combination(dinner_dishes, dinner_calories, 2, 3)
-    afternoon_tea = generate_meal_combination(afternoon_tea_dishes, afternoon_tea_calories, 1, 2)
-    snack = generate_meal_combination(snack_dishes, snack_calories, 1, 2)
-    # Calculate totals
-    all_meals = [breakfast, lunch, dinner, afternoon_tea, snack]
-    total_calories = sum(meal['total_calories'] for meal in all_meals if meal)
+    
+    # Define meal distribution percentages
+    meal_distribution = {
+        'breakfast': 0.35,
+        'lunch': 0.25,
+        'dinner': 0.2,
+        'afternoon_tea': 0.1,
+        'snack': 0.1
+    }
+    
+    # Calculate calories for selected meals only
+    total_percentage = sum(meal_distribution[meal] for meal in selected_meals)
+    meal_calories = {}
+    for meal in selected_meals:
+        meal_calories[meal] = int(adjusted_calories * meal_distribution[meal] / total_percentage)
+    
+    # Get dishes for each selected meal type, filtered by preferences
+    meal_dishes = {}
+    for meal in selected_meals:
+        meal_dishes[meal] = filter_dishes_by_preferences(Dish.query.filter_by(meal_type=meal).all(), preferences)
+    
+    # Generate meal combinations for selected meals
+    generated_meals = {}
+    for meal in selected_meals:
+        min_dishes = 2 if meal in ['breakfast', 'lunch', 'dinner'] else 1
+        max_dishes = 3 if meal in ['breakfast', 'lunch', 'dinner'] else 2
+        generated_meals[meal] = generate_meal_combination(meal_dishes[meal], meal_calories[meal], min_dishes, max_dishes)
+    
+    # Calculate totals for selected meals only
+    total_calories = sum(meal['total_calories'] for meal in generated_meals.values() if meal)
+    
+    # Build plan with only selected meals
     plan = {
-        'breakfast': breakfast,
-        'lunch': lunch,
-        'dinner': dinner,
-        'afternoon_tea': afternoon_tea,
-        'snack': snack,
         'total_calories': total_calories,
         'target_calories': adjusted_calories
     }
+    
+    # Add selected meals to plan
+    for meal in selected_meals:
+        plan[meal] = generated_meals[meal]
+    
     return jsonify(plan)
 
 def generate_meal_combination(dishes, target_calories, min_dishes=2, max_dishes=3):

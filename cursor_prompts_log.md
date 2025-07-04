@@ -152,3 +152,28 @@ I want to add a "Saved Plan" feature to my meal planner. Users should be able to
 - Modified the database schema to include a `saved_plans` table  
 - Ensured saved plans persist across sessions and can be browsed from the Saved Plan page
 
+## Prompt 8 – 2025-07-04
+
+**Prompt:**  
+I want to add a new feature to the "Set Your Goals" panel in the meal planner web app.  
+- Add a new section titled "Select Meals for the Day" right under the "Dietary Preferences" section and before the Quick Presets.  
+- Include 5 checkboxes: Breakfast, Lunch, Dinner, Snack, Afternoon Tea.  
+- By default, all 5 options should be selected.
+
+**Files Modified:**  
+- templates/index.html  
+- templates/plan.html  
+- app.py  
+- static/js/app.js  
+- static/css/style.css (layout adjustments)
+
+**Description of Change:**  
+- Added a new section "Select Meals for the Day" to the Set Your Goals panel with 5 checkboxes: Breakfast, Lunch, Dinner, Snack, Afternoon Tea  
+- Set all checkboxes to be selected by default  
+- Updated the frontend logic in `app.js` to collect selected meal types and include them in the API request when generating a plan  
+- Modified the backend logic in `app.py` to only return the selected meal types in the response  
+- Adjusted the rendering logic in `plan.html` to conditionally display meals based on the user’s selection  
+- Ensured nutrient summary at the top only reflects the displayed meals  
+- Maintained consistent layout and user experience across the UI
+
+

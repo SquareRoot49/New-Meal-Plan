@@ -39,7 +39,29 @@
                         </div>
                     </div>
                     
-
+                    <div class="mb-3">
+                        <label class="form-label">Select Meals for the Day</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="breakfast" id="mealBreakfast" checked>
+                            <label class="form-check-label" for="mealBreakfast">Breakfast</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="lunch" id="mealLunch" checked>
+                            <label class="form-check-label" for="mealLunch">Lunch</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="dinner" id="mealDinner" checked>
+                            <label class="form-check-label" for="mealDinner">Dinner</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="snack" id="mealSnack" checked>
+                            <label class="form-check-label" for="mealSnack">Snack</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="afternoon_tea" id="mealAfternoonTea" checked>
+                            <label class="form-check-label" for="mealAfternoonTea">Afternoon Tea</label>
+                        </div>
+                    </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Quick Presets</label>
@@ -165,6 +187,16 @@ function setCalories(calories) {
     document.getElementById('targetCalories').value = calories;
 }
 
+function getSelectedMeals() {
+    const selectedMeals = [];
+    if (document.getElementById('mealBreakfast').checked) selectedMeals.push('breakfast');
+    if (document.getElementById('mealLunch').checked) selectedMeals.push('lunch');
+    if (document.getElementById('mealDinner').checked) selectedMeals.push('dinner');
+    if (document.getElementById('mealSnack').checked) selectedMeals.push('snack');
+    if (document.getElementById('mealAfternoonTea').checked) selectedMeals.push('afternoon_tea');
+    return selectedMeals;
+}
+
 document.getElementById('planForm').addEventListener('submit', function(e) {
     e.preventDefault();
     generateMealPlan();
@@ -178,6 +210,10 @@ function generateMealPlan() {
     if (document.getElementById('prefVegan').checked) preferences.push('vegan');
     if (document.getElementById('prefGlutenFree').checked) preferences.push('gluten_free');
     if (document.getElementById('prefLowCarb').checked) preferences.push('low_carb');
+    
+    // Gather selected meals
+    const selectedMeals = getSelectedMeals();
+    
     // Show loading
     document.getElementById('welcomeSection').style.display = 'none';
     document.getElementById('mealPlanSection').style.display = 'none';
@@ -189,7 +225,8 @@ function generateMealPlan() {
         },
         body: JSON.stringify({
             target_calories: parseInt(targetCalories),
-            preferences: preferences
+            preferences: preferences,
+            selected_meals: selectedMeals
         })
     })
     .then(response => response.json())
@@ -213,9 +250,13 @@ function displayMealPlan(plan) {
     document.getElementById('totalCalories').textContent = plan.total_calories;
     
     let totalProtein = 0, totalCarbs = 0, totalFat = 0;
-    const meals = [plan.breakfast, plan.lunch, plan.dinner, plan.afternoon_tea, plan.snack];
     
-    meals.forEach(meal => {
+    // Get selected meals from the form
+    const selectedMealsForTotals = getSelectedMeals();
+    
+    // Calculate totals only for selected meals
+    selectedMealsForTotals.forEach(mealKey => {
+        const meal = plan[mealKey];
         if (meal) {
             totalProtein += meal.total_protein;
             totalCarbs += meal.total_carbs;
@@ -239,17 +280,20 @@ function displayMealPlan(plan) {
         { key: 'afternoon_tea', title: 'Afternoon Tea', icon: 'fas fa-mug-hot', color: 'info' }
     ];
     
+    // Get selected meals from the form
+    const selectedMealsForDisplay = getSelectedMeals();
+    
     mealTypes.forEach(mealType => {
         const meal = plan[mealType.key];
-        if (meal) {
+        if (meal && selectedMealsForDisplay.includes(mealType.key)) {
             const mealCard = createMealCard(meal, mealType);
             mealsContainer.appendChild(mealCard);
         }
     });
-    // Render pie charts for each meal
+    // Render pie charts for each selected meal
     mealTypes.forEach(mealType => {
         const meal = plan[mealType.key];
-        if (meal) {
+        if (meal && selectedMealsForDisplay.includes(mealType.key)) {
             renderMealPieChart(meal, mealType.key);
         }
     });
