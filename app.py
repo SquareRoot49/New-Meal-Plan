@@ -117,11 +117,7 @@ def generate_plan():
     target_calories = int(data.get('target_calories', 2000))
     preferences = data.get('preferences', [])
     selected_meals = data.get('selected_meals', ['breakfast', 'lunch', 'dinner', 'snack', 'afternoon_tea'])
-    
-    # Use target calories directly without activity multiplier
     adjusted_calories = target_calories
-    
-    # Define meal distribution percentages
     meal_distribution = {
         'breakfast': 0.35,
         'lunch': 0.25,
@@ -129,70 +125,119 @@ def generate_plan():
         'afternoon_tea': 0.1,
         'snack': 0.1
     }
-    
-    # Calculate calories for selected meals only
     total_percentage = sum(meal_distribution[meal] for meal in selected_meals)
     meal_calories = {}
     for meal in selected_meals:
         meal_calories[meal] = int(adjusted_calories * meal_distribution[meal] / total_percentage)
-    
-    # Get dishes for each selected meal type, filtered by preferences
     meal_dishes = {}
     for meal in selected_meals:
         meal_dishes[meal] = filter_dishes_by_preferences(Dish.query.filter_by(meal_type=meal).all(), preferences)
-    
-    # Generate meal combinations for selected meals
     generated_meals = {}
     for meal in selected_meals:
         min_dishes = 2 if meal in ['breakfast', 'lunch', 'dinner'] else 1
         max_dishes = 3 if meal in ['breakfast', 'lunch', 'dinner'] else 2
         generated_meals[meal] = generate_meal_combination(meal_dishes[meal], meal_calories[meal], min_dishes, max_dishes)
-    
-    # Calculate totals for selected meals only
     total_calories = sum(meal['total_calories'] for meal in generated_meals.values() if meal)
-    
-    # Build plan with only selected meals
+    # If total calories is off by more than 10%, adjust the largest meal's largest dish
+    if abs(total_calories - adjusted_calories) > 0.1 * adjusted_calories:
+        # Find largest meal
+        largest_meal = max((m for m in generated_meals.values() if m), key=lambda m: m['total_calories'])
+        # Find largest dish in that meal
+        largest_dish = max(largest_meal['dishes'], key=lambda d: d['calories'])
+        # Compute needed adjustment
+        diff = adjusted_calories - total_calories
+        # Only allow scaling 0.5x to 1.5x
+        scale = max(0.5, min(1.5, (largest_dish['calories'] + diff) / largest_dish['calories']))
+        # Apply scaling
+        largest_dish['calories'] *= scale
+        largest_dish['protein'] *= scale
+        largest_dish['carbs'] *= scale
+        largest_dish['fat'] *= scale
+        if 'name' in largest_dish:
+            largest_dish['name'] += f" (x{scale:.2f})"
+        # Recompute meal and total
+        largest_meal['total_calories'] = sum(d['calories'] for d in largest_meal['dishes'])
+        largest_meal['total_protein'] = sum(d['protein'] for d in largest_meal['dishes'])
+        largest_meal['total_carbs'] = sum(d['carbs'] for d in largest_meal['dishes'])
+        largest_meal['total_fat'] = sum(d['fat'] for d in largest_meal['dishes'])
+        total_calories = sum(meal['total_calories'] for meal in generated_meals.values() if meal)
     plan = {
         'total_calories': total_calories,
         'target_calories': adjusted_calories
     }
-    
-    # Add selected meals to plan
     for meal in selected_meals:
         plan[meal] = generated_meals[meal]
-    
     return jsonify(plan)
 
 def generate_meal_combination(dishes, target_calories, min_dishes=2, max_dishes=3):
-    """Generate a combination of dishes that best matches the target calories"""
+    """Generate a combination of dishes that best matches the target calories, allowing portion adjustment of one dish if needed."""
     if not dishes:
         return None
-    
     best_combination = None
     best_difference = float('inf')
-    
+    best_scaled = None
     # Try different combinations of dishes
     for num_dishes in range(min_dishes, min(max_dishes + 1, len(dishes) + 1)):
-        # Generate multiple random combinations
-        for _ in range(10):  # Try 10 random combinations
+        for _ in range(20):  # Try more random combinations for better fit
             selected_dishes = random.sample(dishes, num_dishes)
             total_calories = sum(dish.calories for dish in selected_dishes)
-            
-            # Check if this combination is better
             difference = abs(total_calories - target_calories)
+            # Try scaling the last dish if needed
+            if difference > 0 and num_dishes > 1:
+                # Scale the last dish to close the gap
+                base_calories = sum(dish.calories for dish in selected_dishes[:-1])
+                remaining = target_calories - base_calories
+                last_dish = selected_dishes[-1]
+                if last_dish.calories > 0:
+                    scale = max(0.5, min(1.5, remaining / last_dish.calories))  # Only scale 0.5x to 1.5x
+                    scaled_calories = last_dish.calories * scale
+                    scaled_protein = last_dish.protein * scale
+                    scaled_carbs = last_dish.carbs * scale
+                    scaled_fat = last_dish.fat * scale
+                    total_scaled = base_calories + scaled_calories
+                    scaled_difference = abs(total_scaled - target_calories)
+                    if scaled_difference < best_difference:
+                        best_difference = scaled_difference
+                        best_scaled = [
+                            *selected_dishes[:-1],
+                            {
+                                'id': last_dish.id,
+                                'name': last_dish.name + (f" (x{scale:.2f})" if abs(scale-1)>0.01 else ""),
+                                'calories': scaled_calories,
+                                'protein': scaled_protein,
+                                'carbs': scaled_carbs,
+                                'fat': scaled_fat,
+                                'meal_type': last_dish.meal_type,
+                                'vegetarian': last_dish.vegetarian,
+                                'vegan': last_dish.vegan,
+                                'gluten_free': last_dish.gluten_free,
+                                'low_carb': last_dish.low_carb
+                            }
+                        ]
+                # If not scaling, keep best whole-dish combo
             if difference < best_difference:
                 best_difference = difference
                 best_combination = selected_dishes
-    
+    # Use best scaled if available
+    if best_scaled:
+        dishes_out = best_scaled
+        total_calories = sum(d['calories'] if isinstance(d, dict) else d.calories for d in dishes_out)
+        total_protein = sum(d['protein'] if isinstance(d, dict) else d.protein for d in dishes_out)
+        total_carbs = sum(d['carbs'] if isinstance(d, dict) else d.carbs for d in dishes_out)
+        total_fat = sum(d['fat'] if isinstance(d, dict) else d.fat for d in dishes_out)
+        return {
+            'dishes': [d if isinstance(d, dict) else d.to_dict() for d in dishes_out],
+            'total_calories': total_calories,
+            'total_protein': total_protein,
+            'total_carbs': total_carbs,
+            'total_fat': total_fat
+        }
     if not best_combination:
         return None
-    
-    # Calculate totals
     total_calories = sum(dish.calories for dish in best_combination)
     total_protein = sum(dish.protein for dish in best_combination)
     total_carbs = sum(dish.carbs for dish in best_combination)
     total_fat = sum(dish.fat for dish in best_combination)
-    
     return {
         'dishes': [dish.to_dict() for dish in best_combination],
         'total_calories': total_calories,
